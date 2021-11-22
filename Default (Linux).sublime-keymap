@@ -1,0 +1,18 @@
+[
+    // The following are sample key bindings that you can enable for this
+    // package to enable triggering the commands via keys. To use them, copy
+    // one or both to your user key bindindings, uncomment them, and change the
+    // keys used as appropriate.
+
+    // Download and open the URL under the cursor, or the selected text if text
+    // is selected (open_selection needs to be turned on).
+    // { "keys": ["ctrl+shift+h"], "command": "url_download_context" },
+
+    // Open the command palette and interactively prompt for the URL to download
+    // and open.
+    // { "keys": ["ctrl+shift+h"], "command": "show_overlay",
+    //   "args": {
+    //     "overlay": "command_palette",
+    //     "command": "url_download"
+    // }},
+]

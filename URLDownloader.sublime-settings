@@ -1,0 +1,17 @@
+{
+    // By default, the url_download_context command will only look at
+    // the current cursor location or the location where the context
+    // menu was opened for a URL to open.
+    //
+    // Settings this to true will cause it to prefer selected text as
+    // the URL, if there is any text selected.
+    "open_selection": true,
+
+    // When this is enabled, the URL from which a temporary file was downloaded
+    // will be displayed in the status bar while that tab has the focus.
+    "show_url": true,
+
+    // This specifies the protocol to use for any URL that does have one
+    // assigned to it.
+    "default_protocol": "http://"
+}

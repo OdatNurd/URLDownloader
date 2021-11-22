@@ -1,0 +1,25 @@
+[
+    { "caption": "Preferences: URLDownloader",
+      "command": "edit_settings",
+      "args": {
+        "base_file": "${packages}/URLDownloader/URLDownloader.sublime-settings",
+        "default": "{\n\t$0\n}\n"
+      }
+    },
+    { "caption": "Preferences: URLDownloader Key Bindings",
+      "command": "edit_settings",
+      "args": {
+        "base_file": "${packages}/URLDownloader/Default (${platform}).sublime-keymap",
+        "default": "[\n\t$0\n]\n"
+      }
+    },
+    { "caption": "URLDownloader: Open Readme",
+      "command": "open_file",
+      "args": {
+        "file": "${packages}/URLDownloader/README.md"
+      }
+    },
+    { "caption": "URLDownloader: Download and open URL",
+      "command": "url_download"
+    },
+]
