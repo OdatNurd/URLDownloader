@@ -147,7 +147,7 @@ class UrlDownloadCommand(sublime_plugin.WindowCommand):
 
             s = sublime.load_settings('URLDownloader.sublime-settings')
             if s.get('show_url', False):
-                page_view.set_status('url', f'[URL: {url}')
+                page_view.set_status('url', f'[URL: {url}]')
 
         except urllib.error.HTTPError as err:
             self.show_error(url, err)
