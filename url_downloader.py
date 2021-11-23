@@ -6,7 +6,10 @@ import re
 import urllib
 import tempfile
 import textwrap
+import mimetypes
 import ssl, certifi
+
+from mimetypes import guess_extension
 
 
 # Portions of this code are based on the Default/open_context_url.py plugin
@@ -44,16 +47,67 @@ def get_url(view, pt):
     return None
 
 
-def get_temp_filename(url):
+def get_temp_filename(url, mime_ext):
     """
-    Given a URL, get the temporary file's stub name and extension. If the URL
+    Given a URL, get the temporary file's stub name and extension. URL's with
+    files that have no extension will use the given mime extension. If the URL
     has no filename portion, we assume that it will be index.html; is there
     some other sensible default?
     """
     path = urllib.parse.urlparse(url).path
     name = 'index.html' if path in ('', '/') else os.path.basename(path)
 
-    return os.path.splitext(name)
+    name,ext = os.path.splitext(name)
+    return name, mime_ext if ext == '' else ext
+
+
+def open_url(window, url):
+    """
+    Given a URL, download it to a temporary file and then open that file in a
+    tab in the provided window. The temporary file will have a name as close as
+    possible to the filename in the URL, with a temporary suffix on the name to
+    avoid collisions.
+    """
+    def show_error(url, err):
+        sublime.error_message(
+            textwrap.dedent(f"""
+            Error while downloding:
+            {url}:
+
+            {err}
+            """).lstrip())
+
+    try:
+        window.status_message(f'Downloading: {url}')
+
+        context = ssl.create_default_context(cafile=certifi.where())
+        with urllib.request.urlopen(url, context=context) as stream:
+            info = stream.info()
+            content_type = info.get_content_type()
+
+            # Get the name of a temporary file; we provide a potential
+            # extension in case the file doesn't have one.
+            prefix,ext = get_temp_filename(url, guess_extension(content_type, False))
+
+            fd, base_name = tempfile.mkstemp(prefix=prefix + "_", suffix=ext)
+            os.write(fd, stream.read())
+            os.close(fd)
+
+            page_view = window.open_file(base_name)
+            page_view.settings().set("_tmp_url", url)
+
+            s = sublime.load_settings('URLDownloader.sublime-settings')
+            if s.get('show_url', False):
+                page_view.set_status('url', f'[URL: {url}]')
+
+    except urllib.error.HTTPError as err:
+        show_error(url, err)
+    except urllib.error.URLError as err:
+        show_error(url, err.reason)
+    except urllib.error.ContentTooShortError:
+        show_error(url, 'The server sent only a partial response')
+    except BaseException as err:
+        show_error(url, err)
 
 
 class UrlDownloadContextCommand(sublime_plugin.TextCommand):
@@ -125,48 +179,7 @@ class UrlDownloadCommand(sublime_plugin.WindowCommand):
             url = s.get('default_protocol', 'http://') + url
 
         self.previous_url = url
-        sublime.set_timeout_async(lambda: self.open_url(url), 0)
-
-    def open_url(self, url):
-        try:
-            self.window.status_message(f'Downloading: {url}')
-
-            # Open the URL and get a stream to the contents
-            context = ssl.create_default_context(cafile=certifi.where())
-            stream = urllib.request.urlopen(url, context=context)
-
-            # Create a temporary file and store the file content into it
-            prefix,ext = get_temp_filename(url)
-
-            fd, base_name = tempfile.mkstemp(prefix=prefix + "_", suffix=ext)
-            os.write(fd, stream.read())
-            os.close(fd)
-
-            page_view = self.window.open_file(base_name)
-            page_view.settings().set("_tmp_url", url)
-
-            s = sublime.load_settings('URLDownloader.sublime-settings')
-            if s.get('show_url', False):
-                page_view.set_status('url', f'[URL: {url}]')
-
-        except urllib.error.HTTPError as err:
-            self.show_error(url, err)
-        except urllib.error.URLError as err:
-            self.show_error(url, err.reason)
-        except urllib.error.ContentTooShortError:
-            self.show_error(url, 'The server sent only a partial response')
-        except BaseException as err:
-            self.show_error(url, err)
-
-    def show_error(self, url, err):
-        sublime.error_message(
-            textwrap.dedent(f"""
-            Error while downloding:
-            {url}:
-
-            {err}
-            """).lstrip())
-
+        sublime.set_timeout_async(lambda: open_url(self.window, url), 0)
 
     def input_description(self):
         return 'Download and open'
