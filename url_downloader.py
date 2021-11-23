@@ -27,7 +27,7 @@ rex = re.compile(
     ''')
 
 
-def get_url(view, pt):
+def find_url(view, pt):
     """
     Given a point in the file, return back the URL held there, or None if there
     is not one.
@@ -47,7 +47,7 @@ def get_url(view, pt):
     return None
 
 
-def get_temp_filename(url, mime_ext):
+def get_tmp_name(url, mime_ext):
     """
     Given a URL, get the temporary file's stub name and extension. URL's with
     files that have no extension will use the given mime extension. If the URL
@@ -87,7 +87,7 @@ def open_url(window, url):
 
             # Get the name of a temporary file; we provide a potential
             # extension in case the file doesn't have one.
-            prefix,ext = get_temp_filename(url, guess_extension(content_type, False))
+            prefix,ext = get_tmp_name(url, guess_extension(content_type, False))
 
             fd, base_name = tempfile.mkstemp(prefix=prefix + "_", suffix=ext)
             os.write(fd, stream.read())
@@ -140,7 +140,7 @@ class UrlDownloadContextCommand(sublime_plugin.TextCommand):
         if event is not None:
             pt = self.view.window_to_text((event["x"], event["y"]))
 
-        return get_url(self.view, pt)
+        return find_url(self.view, pt)
 
     def description(self, event):
         url = self.find_url(event)
@@ -202,6 +202,5 @@ class TemporaryDownloadEventListener(sublime_plugin.ViewEventListener):
         try:
             if os.path.exists(self.view.file_name()):
                 os.remove(self.view.file_name())
-                print('clobbered')
         except:
             pass
