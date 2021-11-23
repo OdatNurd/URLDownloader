@@ -13,5 +13,10 @@
 
     // This specifies the protocol to use for any URL that does have one
     // assigned to it.
-    "default_protocol": "http://"
+    "default_protocol": "http://",
+
+    // Some online services block requests from automated tools; this specifies
+    // what user agent the requests made should appear to be coming from.
+    // See: https://www.whatismybrowser.com/guides/the-latest-user-agent/
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0"
 }

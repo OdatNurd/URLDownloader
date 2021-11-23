@@ -77,11 +77,17 @@ def open_url(window, url):
             {err}
             """).lstrip())
 
+    settings = sublime.load_settings('URLDownloader.sublime-settings')
+
     try:
         window.status_message(f'Downloading: {url}')
 
+        request = urllib.request.Request(url, headers={
+            'User-Agent': settings.get('user_agent')
+            })
+
         context = ssl.create_default_context(cafile=certifi.where())
-        with urllib.request.urlopen(url, context=context) as stream:
+        with urllib.request.urlopen(request, context=context) as stream:
             info = stream.info()
             content_type = info.get_content_type()
 
@@ -96,8 +102,7 @@ def open_url(window, url):
             page_view = window.open_file(base_name)
             page_view.settings().set("_tmp_url", url)
 
-            s = sublime.load_settings('URLDownloader.sublime-settings')
-            if s.get('show_url', False):
+            if settings.get('show_url', False):
                 page_view.set_status('url', f'[URL: {url}]')
 
     except urllib.error.HTTPError as err:
